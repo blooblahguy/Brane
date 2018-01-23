@@ -1,7 +1,4 @@
-require('lib.camera')
-Input = Input or require('lib.input')
-require('player')
-objects = {}
+
 
 local b='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 -- encoding
@@ -46,8 +43,12 @@ UIParent = {}
 UIParent.attr = {}
 UIParent.attr.name = "UIParent"
 
+require('lib.camera')
+Input = Input or require('lib.input')
+objects = {}
+
 -- textures[layer] {}
-function CreateFrame(type, name, parent)
+function CreateObject(type, name, parent)
 	local frame = {}
 
 	if (not name) then
@@ -58,12 +59,20 @@ function CreateFrame(type, name, parent)
 		self.attr.height = h
 		self.attr.width = w
 	end
-
+	
+	function frame:SetColor(r, g, b, a)
+		a = a ~= nil and a or 255
+		self.attr.colors = {r, g, b, a}
+	end
 	function frame:SetPoint(sp, a, ap, x, y)
 		if (not a and not _G[a]) then
 			print("anchor "..a.attr.name.." does not exist")
 			return false
 		end
+
+		x = x or 0
+		y = y or 0
+		a = a or UIParent
 
 		self.attr.selfPoint = sp
 		self.attr.anchor = a
@@ -84,11 +93,12 @@ function CreateFrame(type, name, parent)
 	attr.alpha = 1
 	attr.hidden = 0
 	attr.selfPoint = nil
-	attr.anchor = nil
+	attr.anchor = UIParent
 	attr.anchorPoint = nil
 	attr.xOfs = 0
 	attr.yOfs = 0
 	attr.name = name
+	attr.colors = {}
 
 	frame.attr = attr
 
@@ -120,6 +130,8 @@ function CreateTexture(name, strata)
 	
 end
 
+player = require('player')
+
 -- Runs first
 function love.load()
 	window = {}
@@ -134,7 +146,7 @@ function love.load()
 
 
 	-- UIParent
-	UIParent = CreateFrame("frame", "UIParent", nil)
+	UIParent = CreateObject("frame", "UIParent", nil)
 
 	
 	input = Input()
@@ -161,23 +173,25 @@ function love.update(dt) -- elapsed = time since last frame update
 	UIParent:SetSize(love.graphics.getWidth(), love.graphics.getHeight())
 	
 
-	test = test or CreateFrame("frame", nil, UIParent)
+	test = test or CreateObject("frame", nil, UIParent)
 	test:SetSize(150, 150)
 	test:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
 
-	test2 = test2 or CreateFrame("frame", nil, test)
+	test2 = test2 or CreateObject("frame", nil, test)
 	test2:SetSize(100,100)
 	test2:SetPoint("CENTER", test, "TOPRIGHT", 0, 0)
 
-	test3 = test3 or CreateFrame("frame", nil, test2)
+	test3 = test3 or CreateObject("frame", nil, test2)
 	test3:SetSize(50,50)
 	test3:SetPoint("RIGHT", test, "LEFT", 0, 0)
 	test3.attr.alpha = 0.5
+	player:update()
 end
 
 -- Runs third
 function love.draw()
 	camera:set()
+
 
 	-- Draw UIParent
 	love.graphics.setColor(255, 255, 0, 25)
@@ -227,7 +241,11 @@ function love.draw()
 			frame.placed.fy = fy
 			frame.placed.fx = fx
 
-			love.graphics.setColor(139 * i, 69 * i, 25 * i, 255 * frame.attr.alpha)
+			if (#frame.attr.colors > 2) then
+				love.graphics.setColor(unpack(frame.attr.colors))
+			else
+				love.graphics.setColor(139 * i, 69 * i, 25 * i, 255 * frame.attr.alpha)
+			end
 			love.graphics.rectangle("fill", fx, fy, frame.attr.width, frame.attr.height)
 		end
 	end

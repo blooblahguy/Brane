@@ -4,21 +4,13 @@ camera.y = 0
 camera.scaleX = 1
 camera.scaleY = 1
 camera.rotation = 0
-camera.dragging = false
-camera.dragging_x = 0
-camera.dragging_y = 0
+
+function camera:lookAt(x, y)
+	self.x = x
+	self.y = y
+end
 
 function camera:set()
-	if (self.dragging) then
-		--print(love.mouse.getPosition())
-		local mx, my = love.mouse.getPosition()
-
-		self.x = self.x + (camera.dragging_x - mx)
-		self.y = self.y + (camera.dragging_y - my)
-		camera.dragging_x = mx
-		camera.dragging_y = my
-		--camera:setPosition(love.mouse.getPosition())
-	end
 
 	love.graphics.push()
 	love.graphics.rotate(-self.rotation)
